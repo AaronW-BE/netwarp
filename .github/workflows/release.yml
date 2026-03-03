@@ -1,0 +1,53 @@
+name: Windows Release Build
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v4
+
+    - name: Install Qt
+      uses: jurplel/install-qt-action@v4
+      with:
+        version: '6.5.3'
+        arch: 'win64_msvc2019_64'
+        modules: 'qtbase qtdeclarative qttools'
+
+    - name: Configure CMake
+      run: cmake -B build -S . -DCMAKE_BUILD_TYPE=Release -G "Visual Studio 17 2022" -A x64
+
+    - name: Build Project
+      run: cmake --build build --config Release
+
+    - name: Run windeployqt
+      run: |
+        mkdir -p deploy
+        cp build/Release/GameAccelerator.exe deploy/
+        windeployqt --release deploy/GameAccelerator.exe
+      shell: bash
+
+    - name: Package Release
+      run: |
+        cd deploy
+        7z a ../GameAccelerator-Windows.zip *
+      shell: bash
+
+    - name: Create Release
+      uses: softprops/action-gh-release@v2
+      with:
+        files: GameAccelerator-Windows.zip
+        tag_name: "v1.0.${{ github.run_number }}"
+        name: "Game Accelerator v1.0.${{ github.run_number }}"
+        draft: false
+        prerelease: false
+        generate_release_notes: true
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
