@@ -19,7 +19,6 @@ jobs:
       with:
         version: '6.5.3'
         arch: 'win64_msvc2019_64'
-        modules: 'qtbase qtdeclarative qttools'
 
     - name: Configure CMake
       run: cmake -B build -S . -DCMAKE_BUILD_TYPE=Release -G "Visual Studio 17 2022" -A x64
